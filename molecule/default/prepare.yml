@@ -1,0 +1,20 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Debian/Ubuntu | Install cron for Backupscript
+      package:
+        name:
+          - "cron"
+        state: latest
+      when: ansible_os_family == "Debian"
+
+    - name: RedHat/CentOS | Install cron for Backupscript
+      package:
+        name:
+          - "cronie"
+        state: latest
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"

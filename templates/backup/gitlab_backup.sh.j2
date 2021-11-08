@@ -1,0 +1,153 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+METRICS_START=$(date +'%s')
+
+# Source Backup variables
+# shellcheck disable=SC1091 # this is intentional
+source "/etc/gitlab/gitlab_backup.conf.sh"
+
+# exec 1>>"${LOGFILE}"
+# exec 2>&1
+
+#############
+# FUNCTIONS #
+#############
+function check_tools {
+  RM="$(command -v rm)"
+  FIND="$(command -v find)"
+  TAR="$(command -v tar)"
+
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | Check if tools exist"
+  for var in RM FIND TAR; do
+    if [[ ! ${!var}  ]] ; then
+      error_exit "ERROR: Variable $var needed but not set!"
+    fi
+  done
+}
+
+function abort {
+  MSG="ERROR: ${1}"
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | ${MSG}"
+  # Error Notification
+  ${NOTIFICATION_ERROR}
+  exit 255
+}
+
+function check_pid {
+  if [ -f "${PIDFILE}" ]
+  then
+    OLD_PID=$(cat "${PIDFILE}")
+    echo "$(date "+%Y-%m-%d %H:%M:%S") | Check if script is already running"
+    if [ -e "/proc/${OLD_PID}" ] && [ -e "/proc/${OLD_PID}/exe" ]; then
+      abort "PID already exists"
+    else
+      rm -f "${PIDFILE}"
+    fi
+  fi
+
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | Create PID"
+  echo $$ > "${PIDFILE}"
+}
+
+function run_backup {
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | Running gitlab-rake."
+
+  # shellcheck disable=SC2015 # this is intentional
+  /usr/bin/gitlab-rake gitlab:backup:create \
+  && echo "$(date "+%Y-%m-%d %H:%M:%S") | Backup Rake was successful." \
+  || abort "The Backup Rake failed! Check ${LOGFILE} for more details."
+}
+
+function run_backup_config {
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | Starting gitlab config backup for Version ${VERSION}."
+
+  # shellcheck disable=SC2015 # this is intentional
+  /usr/bin/gitlab-ctl backup-etc -p "${BACKUP_DIR}" \
+  && echo "$(date "+%Y-%m-%d %H:%M:%S") | Config backup was successful." \
+  || abort "The config backup failed! Check ${LOGFILE} for more details."
+}
+
+function run_backup_additional {
+  echo "$(date "+%Y-%m-%d %H:%M:%S") | Starting gitlab backup for additional files."
+
+  for FOLDER in ${ADDITIONAL_FOLDER}
+  do
+    echo "$(date "+%Y-%m-%d %H:%M:%S") | Starting backup of ${FOLDER}."
+    FOLDER_BASENAME=$(basename "${FOLDER}")
+
+    if ! ${TAR} -czf "${BACKUP_DIR}/${FOLDER_BASENAME}_${NOW}.tar.gz" "${FOLDER}";
+    then
+      abort "Backup of ${FOLDER} failed! Check ${LOGFILE} for more details."
+    else
+      echo "$(date "+%Y-%m-%d %H:%M:%S") | Backup of ${FOLDER} successful."
+    fi
+  done
+}
+
+function remove_old_backups {
+  if [ -d "${BACKUP_DIR}" ]
+  then
+    if [ "${BACKUP_DIR}" == "/" ]
+    then
+      abort "The backup dir is not allowed to be \"/\""
+    else
+      echo "$(date "+%Y-%m-%d %H:%M:%S") | Cleanup of backups *.tar older than $(( RETENTION )) minutes."
+      ${FIND} "${BACKUP_DIR}" -name "*.tar" -mmin +$(( RETENTION + 1 )) -type f -print -exec "${RM}" -Rf {} \;
+
+      echo "$(date "+%Y-%m-%d %H:%M:%S") | Cleanup of backups *.tar.gz older than $(( RETENTION )) minutes."
+      ${FIND} "${BACKUP_DIR}" -name "*.tar.gz" -mmin +$(( RETENTION + 1 )) -type f -print -exec "${RM}" -Rf {} \;
+    fi
+  else
+    abort "The backup process failed! The directory ${BACKUP_DIR} does not exist. Check ${LOGFILE} for more details."
+  fi
+}
+
+function backup_metrics {
+  #
+  # Backupsize
+  #
+  # shellcheck disable=SC2129
+  echo "# HELP gitlab_backup_size_total"  > "${METRICS_PATH}/gitlab.tmp"
+  echo "# TYPE gitlab_backup_size_total gauge" >> "${METRICS_PATH}/gitlab.tmp"
+  du --block-size=1 --summarize "${BACKUP_DIR}" \
+  | sed -ne 's/\\/\\\\/;s/"/\\"/g;s/^\([0-9]\+\)\t\(.*\)$/gitlab_backup_size_total \1/p' >> "${METRICS_PATH}/gitlab.tmp"
+  #
+  # stats
+  #
+  METRICS_END=$(date +'%s')
+  METRICS_DURATION=$((METRICS_END - METRICS_START))
+  # shellcheck disable=SC2129
+  echo "# HELP gitlab_backup_runtime_start starttime of the backupscript in seconds" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "# TYPE gitlab_backup_runtime_start counter" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "gitlab_backup_runtime_start ${METRICS_START}" >> "${METRICS_PATH}/gitlab.tmp"
+  # shellcheck disable=SC2129
+  echo "# HELP gitlab_backup_runtime_end endtime of the backupscript in seconds" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "# TYPE gitlab_backup_runtime_end counter" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "gitlab_backup_runtime_end ${METRICS_END}" >> "${METRICS_PATH}/gitlab.tmp"
+  # shellcheck disable=SC2129
+  echo "# HELP gitlab_backup_runtime_duration runtime of the backupscript in seconds" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "# TYPE gitlab_backup_runtime_duration gauge" >> "${METRICS_PATH}/gitlab.tmp"
+  echo "gitlab_backup_runtime_duration ${METRICS_DURATION}" >> "${METRICS_PATH}/gitlab.tmp"
+  # Rename the temporary file atomically.
+  # This avoids the node exporter seeing half a file.
+  mv "${METRICS_PATH}/gitlab.tmp" \
+  "${METRICS_PATH}/gitlab.prom"
+}
+
+########
+# MAIN #
+########
+
+check_tools
+check_pid
+run_backup
+run_backup_config
+run_backup_additional
+remove_old_backups
+if [ "${METRICS}" = "PROMETHEUS" ]
+then
+  backup_metrics
+fi
+# Success Notification
+${NOTIFICATION_SUCCESS}

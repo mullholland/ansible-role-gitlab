@@ -1,0 +1,10 @@
+---
+gitlab_dependencies:
+  - apt-transport-https
+  - curl
+  - gnupg
+  - openssh-server
+  - openssl
+  - tzdata
+  - rsync
+gitlab_package_name: "{{ gitlab_edition + '=' + gitlab_version + '-' + gitlab_release if gitlab_version and gitlab_release else gitlab_edition }}"

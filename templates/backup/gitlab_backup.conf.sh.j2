@@ -1,0 +1,17 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+# Configuration file for Gitlab backup
+
+BACKUP_DIR='{{ gitlab_backup_path | default("/var/opt/gitlab/backups") }}'
+NOW=$(date +'%Y%m%d%H%M')
+PIDFILE='/var/run/gitlab_backup.pid'
+LOGFILE='{{ gitlab_backup_logfile | default("/var/log/gitlab_backup.log") }}'
+RETENTION="{{ ( gitlab_backup_keep_time|int / 60 ) | int }}"
+ADDITIONAL_FOLDER="{{ gitlab_backup_additional_folder | join(' ') }}"
+# Metrics
+METRICS="{{ gitlab_backup_enable_metrics | default('NONE')}}"
+METRICS_PATH="{{ gitlab_backup_metrics_path | default('/var/lib/node_exporter')}}"
+# Notifications
+NOTIFICATION_ERROR='{{ gitlab_backup_notification_error }}'
+NOTIFICATION_SUCCESS='{{ gitlab_backup_notification_success }}'

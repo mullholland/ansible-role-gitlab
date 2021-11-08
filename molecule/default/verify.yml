@@ -1,0 +1,111 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: SmokeTests
+      debug:
+        msg:
+          - "ansible_version => {{ansible_version}}"
+          - "ansible_distribution => {{ ansible_distribution }}"
+          - "ansible_distribution_major_version => {{ ansible_distribution_major_version }}"
+          - "ansible_os_family  => {{ ansible_os_family}}"
+          - "ansible_system  => {{ ansible_system }}"
+
+    # Repository
+    - name: Test if Debian repository exists
+      lineinfile:
+        name: '/etc/apt/sources.list.d/gitlab.list'
+        line: '# official gitlab repository'
+        state: present
+      check_mode: true
+      register: gitlab_repository
+      failed_when: (gitlab_repository is changed) or (gitlab_repository is failed)
+      when: ansible_os_family == "Debian"
+
+    - name: Test if RedHat repository exists
+      lineinfile:
+        name: '/etc/yum.repos.d/gitlab.repo'
+        line: '# official gitlab repository'
+        state: present
+      check_mode: true
+      register: gitlab_repository
+      failed_when: (gitlab_repository is changed) or (gitlab_repository is failed)
+      when: ansible_os_family == "RedHat"
+
+    # Gitlab
+    - name: Test gitlab.rb config is generated
+      lineinfile:
+        name: '/etc/gitlab/gitlab.rb'
+        line: '# The URL through which GitLab will be accessed.'
+        state: present
+      check_mode: true
+      register: gitlab_rb
+      failed_when: (gitlab_rb is changed) or (gitlab_rb is failed)
+
+    - name: verify gitlab.rb filemode
+      file:
+        name: '/etc/gitlab/gitlab.rb'
+        owner: "root"
+        group: "root"
+        mode: "0600"
+      register: mode_gitlab_rb
+      failed_when: (mode_gitlab_rb is changed) or (mode_gitlab_rb is failed)
+
+    - name: check if gitlab is running
+      uri:
+        url: "http://localhost/-/health"
+      register: mode_gitlab_health
+      failed_when: (mode_gitlab_health is changed) or (mode_gitlab_health is failed)
+
+      # Backup
+    - name: Test if gitlab_backup.conf exists
+      lineinfile:
+        name: '/etc/gitlab/gitlab_backup.conf.sh'
+        line: 'RETENTION="10080"'
+        state: present
+      check_mode: true
+      register: gitlab_backup_conf
+      failed_when: (gitlab_backup_conf is changed) or (gitlab_backup_conf is failed)
+
+    - name: verify gitlab_backup.conf filemode
+      file:
+        name: '/etc/gitlab/gitlab_backup.conf.sh'
+        owner: "root"
+        group: "root"
+        mode: "0600"
+      register: mode_gitlab_backup_conf
+      failed_when: (mode_gitlab_backup_conf is changed) or (mode_gitlab_backup_conf is failed)
+
+    - name: Test if gitlab_backup.sh exists
+      lineinfile:
+        name: "/usr/local/sbin/gitlab_backup.sh"
+        line: '# Source Backup variables'
+        state: present
+      check_mode: true
+      register: gitlab_backup_sh
+      failed_when: (gitlab_backup_sh is changed) or (gitlab_backup_sh is failed)
+
+    - name: verify gitlab_backup.sh filemode
+      file:
+        name: "/usr/local/sbin/gitlab_backup.sh"
+        owner: "root"
+        group: "root"
+        mode: "0700"
+      register: mode_gitlab_backup_sh
+      failed_when: (mode_gitlab_backup_sh is changed) or (mode_gitlab_backup_sh is failed)
+
+    - name: Run gitlab_backup.sh script
+      command: "/usr/local/sbin/gitlab_backup.sh"
+      register: gitlab_run
+      tags:
+        - molecule-idempotence-notest
+
+    - name: Test gitlab_backup.sh script
+      fail:
+        msg: "The script did not run successfully"
+      when: gitlab_run.rc != 0
+      tags:
+        - molecule-idempotence-notest

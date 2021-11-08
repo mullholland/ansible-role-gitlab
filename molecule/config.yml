@@ -1,0 +1,28 @@
+---
+molecule_exceptions:
+  - variation: debian11
+    reason: "No official packages"
+  - variation: fedora33
+    reason: "No official packages"
+  - variation: fedora34
+    reason: "No official packages"
+  - variation: fedora35
+    reason: "No official packages"
+  - variation: rockylinux8
+    reason: "No official packages"
+  - variation: amazonlinux
+    reason: "No official packages"
+
+molecule_scenarios:
+  - scenario: "default"
+    ansible: ["2.9", "2.10", "2.11"]
+    platforms:
+      - "debian9"
+      - "debian10"
+      - "ubuntu1804"
+      - "ubuntu2004"
+      - "centos7"
+      - "centos8"
+      - "centos8-stream"
+      - "ubi8"
+      - "almalinux8"

@@ -1,0 +1,26 @@
+---
+- name: Create backup script
+  template:
+    src: "backup/gitlab_backup.sh.j2"
+    dest: "/usr/local/sbin/gitlab_backup.sh"
+    owner: "root"
+    group: "root"
+    mode: "0700"
+
+- name: Create backup config script
+  template:
+    src: "backup/gitlab_backup.conf.sh.j2"
+    dest: "/etc/gitlab/gitlab_backup.conf.sh"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+
+- name: Create Gitlab backup cron
+  cron:
+    name: "gitlab-backup"
+    minute: "{{ gitlab_backup_cron.minute }}"
+    hour: "{{ gitlab_backup_cron.hour }}"
+    day: "{{ gitlab_backup_cron.day }}"
+    weekday: "{{ gitlab_backup_cron.weekday }}"
+    month: "{{ gitlab_backup_cron.month }}"
+    job: "/usr/local/sbin/gitlab_backup.sh"

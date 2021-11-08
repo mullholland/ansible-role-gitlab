@@ -1,0 +1,60 @@
+---
+- name: RedHat/CentOS | Add Gitlab repo
+  template:
+    src: "repository/rpm.j2"
+    dest: "/etc/yum.repos.d/gitlab.repo"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: ansible_os_family == "RedHat"
+
+- name: RedHat/CentOS | Add Gitlab repo keys
+  rpm_key:
+    state: present
+    key: "{{ item }}"
+  with_items:
+    - "{{ gitlab_repository_key_url }}"
+    - "{{ gitlab_repository_key_pub_url }}"
+  register: gitlab_repository_state
+  when: ansible_os_family == "RedHat"
+
+- name: RedHat/CentOS | Refresh yum metadata cache if repo changed.
+  command: yum clean metadata
+  args:
+    warn: false
+  when:
+    - gitlab_repository_state.changed
+    - ansible_os_family == "RedHat"
+  # Data should be refreshed immediatly for other roles which depend on them
+  # Flush handlers is not used because it would potentially flush handlers,
+  # which are not meant to be flushed at this poiunt in the playbook
+  tags:
+    - skip_ansible_lint
+
+- name: Debian/Ubuntu | Add Gitlab repo key
+  apt_key:
+    url: "{{ gitlab_repository_key_url }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Debian/Ubuntu | Add Gitlab repo
+  template:
+    src: "repository/deb.j2"
+    dest: "/etc/apt/sources.list.d/gitlab.list"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: gitlab_repository_state
+  when: ansible_os_family == "Debian"
+
+- name: Debian/Ubuntu | Update repository cache
+  apt:
+    update_cache: true
+  when:
+    - gitlab_repository_state.changed
+    - ansible_os_family == "Debian"
+  # Data should be refreshed immediatly for other roles which depend on them
+  # Flush handlers is not used because it would potentially flush handlers,
+  # which are not meant to be flushed at this poiunt in the playbook
+  tags:
+    - skip_ansible_lint

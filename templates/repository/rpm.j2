@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+# official gitlab repository
+
+[{{ gitlab_edition }}]
+name={{ gitlab_edition }}
+baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/el/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/$basearch
+repo_gpgcheck=1
+gpgcheck=1
+enabled=1
+gpgkey={{ gitlab_repository_key_url }}
+       {{ gitlab_repository_key_pub_url }}
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+
+[{{ gitlab_edition }}-source]
+name={{ gitlab_edition }}-source
+baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/el/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/SRPMS
+repo_gpgcheck=1
+gpgcheck=1
+enabled=1
+gpgkey={{ gitlab_repository_key_url }}
+       {{ gitlab_repository_key_pub_url }}
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300

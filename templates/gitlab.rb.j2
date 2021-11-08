@@ -1,0 +1,164 @@
+# {{ ansible_managed }}
+#
+#
+# The URL through which GitLab will be accessed.
+external_url "{{ gitlab_external_url }}"
+
+# gitlab.yml configuration
+gitlab_rails['time_zone'] = "{{ gitlab_time_zone }}"
+gitlab_rails['backup_keep_time'] = {{ gitlab_backup_keep_time }}
+gitlab_rails['gitlab_email_enabled'] = {{ gitlab_email_enabled }}
+{% if gitlab_email_enabled == "true" %}
+gitlab_rails['gitlab_email_from'] = "{{ gitlab_email_from }}"
+gitlab_rails['gitlab_email_display_name'] = "{{ gitlab_email_display_name }}"
+gitlab_rails['gitlab_email_reply_to'] = "{{ gitlab_email_reply_to }}"
+{% endif %}
+
+# Default Theme
+gitlab_rails['gitlab_default_theme'] = "{{ gitlab_default_theme }}"
+
+# NGINX
+## See https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/settings/nginx.md
+# Whether to redirect http to https.
+nginx['redirect_http_to_https'] = {{ gitlab_redirect_http_to_https }}
+{% if gitlab_nginx_listen_port is defined %}
+nginx['listen_port'] = "{{ gitlab_nginx_listen_port }}"
+{% endif %}
+{% if gitlab_nginx_listen_https is defined %}
+nginx['listen_https'] = {{ gitlab_nginx_listen_https }}
+nginx['ssl_certificate'] = "{{ gitlab_ssl_certificate }}"
+nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
+{% endif %}
+
+letsencrypt['enable'] = {{ gitlab_letsencrypt_enable }}
+{% if gitlab_letsencrypt_enable == "true" %}
+letsencrypt['contact_emails'] = "{{ gitlab_letsencrypt_contact_emails | to_json }}"
+letsencrypt['auto_renew_hour'] = "{{ gitlab_letsencrypt_auto_renew_hour }}"
+letsencrypt['auto_renew_minute'] = "{{ gitlab_letsencrypt_auto_renew_minute }}"
+letsencrypt['auto_renew_day_of_month'] = "{{ gitlab_letsencrypt_auto_renew_day_of_month }}"
+letsencrypt['auto_renew'] = "{{ gitlab_letsencrypt_auto_renew }}"
+{% endif %}
+
+# The directory where Git repositories will be stored.
+git_data_dirs({"default" => {"path" => "{{ gitlab_git_data_dir }}"} })
+
+# The directory where Gitlab backups will be stored
+gitlab_rails['backup_path'] = "{{ gitlab_backup_path }}"
+
+gitlab_rails['ldap_enabled'] = {{ gitlab_ldap_enabled }}
+{% if gitlab_ldap_enabled == "true" %}
+# https://docs.gitlab.com/ce/administration/auth/ldap/#disable-ldap-web-sign-in
+gitlab_rails['prevent_ldap_sign_in'] = {{ gitlab_prevent_ldap_sign_in }}
+
+### LDAP Settings
+###! Docs: https://docs.gitlab.com/omnibus/settings/ldap.html
+###! **Be careful not to break the indentation in the ldap_servers block. It is
+###!   in yaml format and the spaces must be retained. Using tabs will not work.**
+
+###! **remember to close this block with 'EOS' below**
+gitlab_rails['ldap_servers'] = {
+  'main' => {
+    'label' => '{{ gitlab_ldap_config_label }}',
+    'host' =>  '{{ gitlab_ldap_config_host }}',
+    'port' => {{ gitlab_ldap_config_port }},
+    'uid' => '{{ gitlab_ldap_config_uid }}',
+    'encryption' => '{{ gitlab_ldap_config_encryption }}',
+    'verify_certificates' => {{ gitlab_ldap_config_verify_certificates }},
+    'bind_dn' => '{{ gitlab_ldap_config_bind_dn }}',
+    'password' => '{{ gitlab_ldap_config_password }}',
+{% if gitlab_ldap_config_tls_options|length %}
+    'tls_options' => {
+      'ca_file' => '{{ gitlab_ldap_config_tls_options.ca_file }}',
+      'ssl_version' => '{{ gitlab_ldap_config_tls_options.ssl_version }}',
+      'ciphers' => '{{ gitlab_ldap_config_tls_options.ciphers }}',
+      'cert' => '{{ gitlab_ldap_config_tls_options.cert }}',
+      'key' => '{{ gitlab_ldap_config_tls_options.key }}'
+    },
+{% endif %}
+    'timeout' => {{ gitlab_ldap_config_timeout| default(10) }},
+    'active_directory' => {{ gitlab_ldap_config_active_directory | default(true) }},
+    'allow_username_or_email_login' => {{ gitlab_ldap_config_allow_username_or_email_login | default(false) }},
+    'block_auto_created_users' => {{ gitlab_ldap_config_block_auto_created_users | default(false)  }},
+    'base' => '{{ gitlab_ldap_config_ldap_base }}',
+    'user_filter' => '{{ gitlab_ldap_config_user_filter }}',
+{% if gitlab_ldap_config_attributes|length %}
+    'attributes' => {
+      'username' => [{{ gitlab_ldap_config_attributes.username }}],'
+      'email' => [{{ gitlab_ldap_config_attributes.email }}],
+      'name' => '{{ gitlab_ldap_config_attributes.name }}',
+      'first_name' => '{{ gitlab_ldap_config_attributes.first_name }}',
+      'last_name' => '{{ gitlab_ldap_config_attributes.last_name }}'
+    },
+{% endif %}
+{% if gitlab_ldap_config_group_base|length %}
+    'group_base' => '{{ gitlab_ldap_config_group_base  }}',
+{% endif %}
+{% if gitlab_ldap_config_admin_group|length %}
+    'admin_group' => '{{ gitlab_ldap_config_admin_group  }}',
+{% endif %}
+{% if gitlab_ldap_config_external_groups|length %}
+    'external_groups' => '{{ gitlab_ldap_config_external_groups }}',
+{% endif %}
+    'lowercase_usernames' => {{ gitlab_ldap_config_lowercase_usernames | default(false) }}
+  }
+}
+{% endif %}
+
+# Use smtp instead of sendmail/postfix
+# More details and example configuration at
+# https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/doc/settings/smtp.md
+gitlab_rails['smtp_enable'] = {{ gitlab_smtp_enable }}
+{% if gitlab_smtp_enable == "true" %}
+gitlab_rails['smtp_address'] = '{{ gitlab_smtp_address }}'
+gitlab_rails['smtp_port'] = {{ gitlab_smtp_port }}
+{% if gitlab_smtp_user_name %}
+gitlab_rails['smtp_user_name'] = '{{ gitlab_smtp_user_name }}'
+{% endif %}
+{% if gitlab_smtp_password %}
+gitlab_rails['smtp_password'] = '{{ gitlab_smtp_password }}'
+{% endif %}
+gitlab_rails['smtp_domain'] = '{{ gitlab_smtp_domain }}'
+{% if gitlab_smtp_authentication %}
+gitlab_rails['smtp_authentication'] = '{{ gitlab_smtp_authentication }}'
+{% endif %}
+gitlab_rails['smtp_enable_starttls_auto'] = {{ gitlab_smtp_enable_starttls_auto }}
+gitlab_rails['smtp_tls'] = {{ gitlab_smtp_tls }}
+gitlab_rails['smtp_openssl_verify_mode'] = '{{ gitlab_smtp_openssl_verify_mode }}'
+gitlab_rails['smtp_ca_path'] = '{{ gitlab_smtp_ca_path }}'
+gitlab_rails['smtp_ca_file'] = '{{ gitlab_smtp_ca_file }}'
+{% endif %}
+
+# 2-way SSL Client Authentication.
+{% if gitlab_nginx_ssl_verify_client %}
+nginx['ssl_verify_client'] = "{{ gitlab_nginx_ssl_verify_client }}"
+{% endif %}
+{% if gitlab_nginx_ssl_client_certificate %}
+nginx['ssl_client_certificate'] = "{{ gitlab_nginx_ssl_client_certificate }}"
+{% endif %}
+
+# GitLab registry.
+registry['enable'] = {{ gitlab_registry_enable }}
+{% if gitlab_registry_enable == "true" %}
+registry_external_url "{{ gitlab_registry_external_url }}"
+registry_nginx['ssl_certificate'] = "{{ gitlab_registry_nginx_ssl_certificate }}"
+registry_nginx['ssl_certificate_key'] = "{{ gitlab_registry_nginx_ssl_certificate_key }}"
+{% endif %}
+
+{% if gitlab_extra_settings is defined %}
+# Extra configuration
+{% for extra in gitlab_extra_settings %}
+{% for setting in extra %}
+{% for kv in extra[setting] %}
+{% if (kv.type is defined and kv.type == 'plain') or (kv.value is not string) %}
+{{ setting }}['{{ kv.key }}'] = {{ kv.value }}
+{% else %}
+{{ setting }}['{{ kv.key }}'] = '{{ kv.value }}'
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+# To change other settings, see:
+# https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/README.md#changing-gitlab-yml-settings
