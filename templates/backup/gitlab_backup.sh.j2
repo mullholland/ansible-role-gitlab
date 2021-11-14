@@ -7,8 +7,8 @@ METRICS_START=$(date +'%s')
 # shellcheck disable=SC1091 # this is intentional
 source "/etc/gitlab/gitlab_backup.conf.sh"
 
-# exec 1>>"${LOGFILE}"
-# exec 2>&1
+exec 1>>"${LOGFILE}"
+exec 2>&1
 
 #############
 # FUNCTIONS #
