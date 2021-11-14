@@ -35,6 +35,7 @@ gitlab_config_template: "gitlab.rb.j2"
 
 # SSL Configuration.
 gitlab_redirect_http_to_https: "false"
+gitlab_nginx_listen_https: "false"
 gitlab_ssl_certificate: "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
 gitlab_ssl_certificate_key: "/etc/gitlab/ssl/{{ gitlab_domain }}.key"
 
