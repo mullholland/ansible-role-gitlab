@@ -242,9 +242,8 @@ This role has been tested on these [container images](https://hub.docker.com/u/m
 
 The minimum version of Ansible required is 2.10, tests have been done to:
 
--   The previous version.
+-   The last 2 versions.
 -   The current version.
--   The development version.
 
 
 
