@@ -236,7 +236,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/m
 -   [ubuntu2004](https://hub.docker.com/r/mullholland/docker-molecule-ubuntu2004)
 -   [centos7](https://hub.docker.com/r/mullholland/docker-molecule-centos7)
 -   [centos8](https://hub.docker.com/r/mullholland/docker-molecule-centos8)
--   [centos8-stream](https://hub.docker.com/r/mullholland/docker-molecule-centos8-stream)
+-   [centos-stream8](https://hub.docker.com/r/mullholland/docker-molecule-centos-stream8)
 -   [ubi8](https://hub.docker.com/r/mullholland/docker-molecule-ubi8)
 -   [almalinux8](https://hub.docker.com/r/mullholland/docker-molecule-almalinux8)
 
