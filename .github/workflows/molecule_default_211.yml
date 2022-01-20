@@ -5,9 +5,12 @@ name: "Ansible Molecule (2.11/default)"
 
 on:
   push:
-    tags_ignore:
-      - '*'
+    branches:
+      - '**'
+    tags-ignore:
+      - '*.*'
   pull_request:
+    types: [assigned]
   schedule:
     - cron: '13 7 7 * *'
 
@@ -20,7 +23,7 @@ jobs:
         with:
           path: "${{ github.repository }}"
       - name: molecule
-        uses: mullholland/molecule-github-action@v0.1.1
+        uses: mullholland/molecule-github-action@v0.2.3
         with:
           command: lint
           scenario: "default"
@@ -33,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [debian9, debian10, ubuntu1804, ubuntu2004, centos7, centos8, centos8-stream, ubi8, almalinux8]  # yamllint disable-line rule:line-length
+        platform: [debian9, debian10, ubuntu1804, ubuntu2004, centos7, centos8, centos-stream8, ubi8, almalinux8]  # yamllint disable-line rule:line-length
 
     steps:
       - name: checkout
@@ -41,7 +44,7 @@ jobs:
         with:
           path: "${{ github.repository }}"
       - name: molecule
-        uses: mullholland/molecule-github-action@v0.1.1
+        uses: mullholland/molecule-github-action@v0.2.3
         with:
           namespace: "ghcr.io/mullholland"
           scenario: "default"

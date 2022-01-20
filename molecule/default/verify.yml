@@ -57,8 +57,10 @@
     - name: check if gitlab is running
       uri:
         url: "http://localhost/-/health"
-      register: mode_gitlab_health
-      failed_when: (mode_gitlab_health is changed) or (mode_gitlab_health is failed)
+      register: _result
+      until: _result.status == 200
+      retries: 120 # 120 * 5 seconds = 5min
+      delay: 5 # Every 5 seconds
 
       # Backup
     - name: Test if gitlab_backup.conf exists
