@@ -6,10 +6,11 @@
 
   tasks:
     - name: Debian/Ubuntu | Install cron for Backupscript
-      package:
+      ansible.builtin.apt:
         name:
           - "cron"
         state: latest
+        update_cache: true
       when: ansible_os_family == "Debian"
 
     - name: RedHat/CentOS | Install cron for Backupscript
