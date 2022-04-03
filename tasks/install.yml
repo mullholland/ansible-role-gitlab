@@ -1,18 +1,18 @@
 ---
 - name: Install GitLab dependencies.
-  package:
+  ansible.builtin.package:
     name: "{{ gitlab_dependencies }}"
     state: present
 
 - name: Install GitLab
-  package:
+  ansible.builtin.package:
     name: "{{ gitlab_package_name | default(gitlab_edition) }}"
     state: present
     update_cache: true
   register: gitlab_install_output
 
 - name: Create GitLab configuration file.
-  template:
+  ansible.builtin.template:
     src: "{{ gitlab_config_template }}"
     dest: /etc/gitlab/gitlab.rb
     owner: "root"
@@ -23,7 +23,7 @@
 # Start and configure GitLab. Sometimes the first run fails, but after that,
 # restarts fix problems, so ignore failures on this run.
 - name: Reconfigure GitLab (first run).
-  command: gitlab-ctl reconfigure
+  ansible.builtin.command: gitlab-ctl reconfigure
   args:
     creates: "/var/opt/gitlab/bootstrapped"
   failed_when: false
