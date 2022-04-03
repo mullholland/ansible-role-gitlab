@@ -6,7 +6,7 @@
 
   tasks:
     - name: SmokeTests
-      debug:
+      ansible.builtin.debug:
         msg:
           - "ansible_version => {{ansible_version}}"
           - "ansible_distribution => {{ ansible_distribution }}"
@@ -16,7 +16,7 @@
 
     # Repository
     - name: Test if Debian repository exists
-      lineinfile:
+      ansible.builtin.lineinfile:
         name: '/etc/apt/sources.list.d/gitlab.list'
         line: '# official gitlab repository'
         state: present
@@ -26,7 +26,7 @@
       when: ansible_os_family == "Debian"
 
     - name: Test if RedHat repository exists
-      lineinfile:
+      ansible.builtin.lineinfile:
         name: '/etc/yum.repos.d/gitlab.repo'
         line: '# official gitlab repository'
         state: present
@@ -37,7 +37,7 @@
 
     # Gitlab
     - name: Test gitlab.rb config is generated
-      lineinfile:
+      ansible.builtin.lineinfile:
         name: '/etc/gitlab/gitlab.rb'
         line: '# The URL through which GitLab will be accessed.'
         state: present
@@ -46,7 +46,7 @@
       failed_when: (gitlab_rb is changed) or (gitlab_rb is failed)
 
     - name: verify gitlab.rb filemode
-      file:
+      ansible.builtin.file:
         name: '/etc/gitlab/gitlab.rb'
         owner: "root"
         group: "root"
@@ -55,16 +55,16 @@
       failed_when: (mode_gitlab_rb is changed) or (mode_gitlab_rb is failed)
 
     - name: check if gitlab is running
-      uri:
+      ansible.builtin.uri:
         url: "http://localhost/-/health"
       register: _result
       until: _result.status == 200
-      retries: 120 # 120 * 5 seconds = 5min
-      delay: 5 # Every 5 seconds
+      retries: 120  # 120 * 5 seconds = 5min
+      delay: 5  # Every 5 seconds
 
       # Backup
     - name: Test if gitlab_backup.conf exists
-      lineinfile:
+      ansible.builtin.lineinfile:
         name: '/etc/gitlab/gitlab_backup.conf.sh'
         line: 'RETENTION="10080"'
         state: present
@@ -73,7 +73,7 @@
       failed_when: (gitlab_backup_conf is changed) or (gitlab_backup_conf is failed)
 
     - name: verify gitlab_backup.conf filemode
-      file:
+      ansible.builtin.file:
         name: '/etc/gitlab/gitlab_backup.conf.sh'
         owner: "root"
         group: "root"
@@ -82,7 +82,7 @@
       failed_when: (mode_gitlab_backup_conf is changed) or (mode_gitlab_backup_conf is failed)
 
     - name: Test if gitlab_backup.sh exists
-      lineinfile:
+      ansible.builtin.lineinfile:
         name: "/usr/local/sbin/gitlab_backup.sh"
         line: '# Source Backup variables'
         state: present
@@ -91,7 +91,7 @@
       failed_when: (gitlab_backup_sh is changed) or (gitlab_backup_sh is failed)
 
     - name: verify gitlab_backup.sh filemode
-      file:
+      ansible.builtin.file:
         name: "/usr/local/sbin/gitlab_backup.sh"
         owner: "root"
         group: "root"
@@ -100,13 +100,13 @@
       failed_when: (mode_gitlab_backup_sh is changed) or (mode_gitlab_backup_sh is failed)
 
     - name: Run gitlab_backup.sh script
-      command: "/usr/local/sbin/gitlab_backup.sh"
+      ansible.builtin.command: "/usr/local/sbin/gitlab_backup.sh"
       register: gitlab_run
       tags:
         - molecule-idempotence-notest
 
     - name: Test gitlab_backup.sh script
-      fail:
+      ansible.builtin.fail:
         msg: "The script did not run successfully"
       when: gitlab_run.rc != 0
       tags:
