@@ -208,10 +208,11 @@ The machine needs to be prepared in CI this is done using `molecule/default/prep
 
   tasks:
     - name: Debian/Ubuntu | Install cron for Backupscript
-      package:
+      ansible.builtin.apt:
         name:
           - "cron"
         state: latest
+        update_cache: true
       when: ansible_os_family == "Debian"
 
     - name: RedHat/CentOS | Install cron for Backupscript
@@ -235,7 +236,6 @@ This role has been tested on these [container images](https://hub.docker.com/u/m
 -   [ubuntu1804](https://hub.docker.com/r/mullholland/docker-molecule-ubuntu1804)
 -   [ubuntu2004](https://hub.docker.com/r/mullholland/docker-molecule-ubuntu2004)
 -   [centos7](https://hub.docker.com/r/mullholland/docker-molecule-centos7)
--   [centos8](https://hub.docker.com/r/mullholland/docker-molecule-centos8)
 -   [centos-stream8](https://hub.docker.com/r/mullholland/docker-molecule-centos-stream8)
 -   [ubi8](https://hub.docker.com/r/mullholland/docker-molecule-ubi8)
 -   [almalinux8](https://hub.docker.com/r/mullholland/docker-molecule-almalinux8)
