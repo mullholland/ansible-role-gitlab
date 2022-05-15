@@ -21,6 +21,7 @@ molecule_scenarios:
       - "debian10"
       - "ubuntu1804"
       - "ubuntu2004"
+      # - "ubuntu2204"  # https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/6793
       - "centos7"
       - "centos-stream8"
       - "ubi8"
