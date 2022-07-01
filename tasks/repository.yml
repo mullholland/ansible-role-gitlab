@@ -19,7 +19,7 @@
   when: ansible_os_family == "RedHat"
 
 - name: RedHat/CentOS | Refresh yum metadata cache if repo changed.
-  ansible.builtin.yum: yum clean metadata
+  ansible.builtin.command: yum clean metadata
   when:
     - gitlab_repository_state.changed
     - ansible_os_family == "RedHat"
