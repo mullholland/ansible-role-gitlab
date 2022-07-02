@@ -20,14 +20,12 @@
 
 - name: RedHat/CentOS | Refresh yum metadata cache if repo changed.
   ansible.builtin.command: yum clean metadata
-  args:
-    warn: false
   when:
     - gitlab_repository_state.changed
     - ansible_os_family == "RedHat"
   # Data should be refreshed immediatly for other roles which depend on them
   # Flush handlers is not used because it would potentially flush handlers,
-  # which are not meant to be flushed at this poiunt in the playbook
+  # which are not meant to be flushed at this point in the playbook
   tags:
     - skip_ansible_lint
 
