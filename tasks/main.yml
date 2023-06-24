@@ -10,11 +10,11 @@
     - 'default.yml'
 
 - name: Add Gitlab repository
-  include: repository.yml
+  ansible.builtin.include_tasks: repository.yml
 
 - name: Install Gitlab
-  include: install.yml
+  ansible.builtin.include_tasks: install.yml
 
 - name: Install Gitlab backup scripts
-  include: backup.yml
+  ansible.builtin.include_tasks: backup.yml
   when: gitlab_backup_enable

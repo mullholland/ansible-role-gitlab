@@ -85,7 +85,6 @@ gitlab_restart_handler_ignore_failure: false
 # Optional settings.
 gitlab_time_zone: "UTC"
 gitlab_backup_keep_time: "604800"  # 7 days
-gitlab_download_validate_certs: true
 gitlab_default_theme: '2'
 
 # Email configuration.
@@ -147,9 +146,6 @@ gitlab_backup_cron:
   day: "*"
   month: "*"
   weekday: "*"
-
-# Set verbosity
-gitlab_backup_verbose: false
 
 # Backup additional path
 gitlab_backup_additional_folder:

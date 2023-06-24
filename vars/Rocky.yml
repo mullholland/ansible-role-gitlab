@@ -6,4 +6,4 @@ gitlab_dependencies:
   - tzdata
   - yum-utils
   - rsync
-gitlab_package_name: "{{ gitlab_edition + '-' + gitlab_version + '-' + gitlab_release if gitlab_version and gitlab_release  else gitlab_edition  }}"
+gitlab_package_name: "{{ gitlab_edition + '-' + gitlab_version + '-' + gitlab_release if gitlab_version and gitlab_release else gitlab_edition }}"

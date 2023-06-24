@@ -5,7 +5,7 @@
 
 BACKUP_DIR='{{ gitlab_backup_path | default("/var/opt/gitlab/backups") }}'
 NOW=$(date +'%Y%m%d%H%M')
-PIDFILE='/var/run/gitlab_backup.pid'
+PIDFILE='{{ gitlab_backup_pid_file }}'
 LOGFILE='{{ gitlab_backup_logfile | default("/var/log/gitlab_backup.log") }}'
 RETENTION="{{ ( gitlab_backup_keep_time|int / 60 ) | int }}"
 ADDITIONAL_FOLDER="{{ gitlab_backup_additional_folder | join(' ') }}"

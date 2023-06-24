@@ -1,21 +1,56 @@
 # [gitlab](#gitlab)
 
-# **IMPORTANT**
-# This role will no longer be updated. you can use [robertdebock/ansible-role-gitlab](https://github.com/robertdebock/ansible-role-gitlab) as an alternative.
+Installs and configures Gitlab. Adds an optional backupscript for local backups including config and terraform states.
 
-# ---
+|GitHub|GitLab|Quality|Downloads|Version|
+|------|------|-------|---------|-------|
+|[![github](https://github.com/mullholland/ansible-role-gitlab/workflows/Ansible%20Molecule/badge.svg)](https://github.com/mullholland/ansible-role-gitlab/actions)|[![gitlab](https://gitlab.com/opensourceunicorn/ansible-role-gitlab/badges/master/pipeline.svg)](https://gitlab.com/opensourceunicorn/ansible-role-gitlab)|[![quality](https://img.shields.io/ansible/quality/56884)](https://galaxy.ansible.com/mullholland/gitlab)|[![downloads](https://img.shields.io/ansible/role/d/56884)](https://galaxy.ansible.com/mullholland/gitlab)|[![Version](https://img.shields.io/github/release/mullholland/ansible-role-gitlab.svg)](https://github.com/mullholland/ansible-role-gitlab/releases/)|
 
-|GitHub|GitLab|
-|------|------|
-|[![github](https://github.com/mullholland/ansible-role-gitlab/workflows/Ansible%20Molecule/badge.svg)](https://github.com/mullholland/ansible-role-gitlab/actions)|[![gitlab](https://gitlab.com/mullholland/ansible-role-gitlab/badges/main/pipeline.svg)](https://gitlab.com/mullholland/ansible-role-gitlab)|
+## [Example Playbook](#example-playbook)
 
-Installs and configures Gitlab.
-Adds an optional backupscript for local backups including config and terraform states.
+This example is taken from [`molecule/default/converge.yml`](https://github.com/mullholland/ansible-role-gitlab/blob/master/molecule/default/converge.yml) and is tested on each push, pull request and release.
+
+```yaml
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: "mullholland.gitlab"
+```
+
+The machine needs to be prepared. In CI this is done using [`molecule/default/prepare.yml`](https://github.com/mullholland/ansible-role-gitlab/blob/master/molecule/default/prepare.yml):
+
+```yaml
+---
+- name: Prepare
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Debian/Ubuntu | Install cron for Backupscript
+      ansible.builtin.apt:
+        name:
+          - "cron"
+        state: latest
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: RedHat/CentOS | Install cron for Backupscript
+      package:
+        name:
+          - "cronie"
+        state: latest
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
+```
 
 
 ## [Role Variables](#role-variables)
 
-These variables are set in `defaults/main.yml`:
+The default values for the variables are set in [`defaults/main.yml`](https://github.com/mullholland/ansible-role-gitlab/blob/master/defaults/main.yml):
+
 ```yaml
 ---
 # Edition/Version
@@ -104,7 +139,6 @@ gitlab_restart_handler_ignore_failure: false
 # Optional settings.
 gitlab_time_zone: "UTC"
 gitlab_backup_keep_time: "604800"  # 7 days
-gitlab_download_validate_certs: true
 gitlab_default_theme: '2'
 
 # Email configuration.
@@ -167,9 +201,6 @@ gitlab_backup_cron:
   month: "*"
   weekday: "*"
 
-# Set verbosity
-gitlab_backup_verbose: false
-
 # Backup additional path
 gitlab_backup_additional_folder:
   - "/var/opt/gitlab/gitlab-rails/shared/terraform_state"  # Terraform state files
@@ -189,94 +220,44 @@ gitlab_backup_notification_success: ''
 # gitlab_backup_notification_success: "curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/XXXX-XXXX-XXXX-XXXX"
 ```
 
+## [Requirements](#requirements)
 
-## [Example Playbook](#example-playbook)
-
-This example is taken from `molecule/default/converge.yml` and is tested on each push, pull request and release.
-```yaml
----
-- name: Converge
-  hosts: all
-  become: true
-  gather_facts: true
-  roles:
-    - role: "mullholland.gitlab"
-```
-
-The machine needs to be prepared in CI this is done using `molecule/default/prepare.yml`:
-```yaml
----
-- name: Prepare
-  hosts: all
-  become: true
-  gather_facts: true
-
-  tasks:
-    - name: Debian/Ubuntu | Install cron for Backupscript
-      ansible.builtin.apt:
-        name:
-          - "cron"
-        state: latest
-        update_cache: true
-      when: ansible_os_family == "Debian"
-
-    - name: RedHat/CentOS | Install cron for Backupscript
-      package:
-        name:
-          - "cronie"
-        state: latest
-      when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
-```
+- pip packages listed in [requirements.txt](https://github.com/mullholland/ansible-role-gitlab/blob/master/requirements.txt).
 
 
+## [Context](#context)
 
+This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://mullholland.net) for further information.
 
+Here is an overview of related roles:
+![dependencies](https://raw.githubusercontent.com/mullholland/ansible-role-gitlab/png/requirements.png "Dependencies")
 
 ## [Compatibility](#compatibility)
 
 This role has been tested on these [container images](https://hub.docker.com/u/mullholland):
 
--   [debian9](https://hub.docker.com/r/mullholland/docker-molecule-debian9)
--   [debian10](https://hub.docker.com/r/mullholland/docker-molecule-debian10)
--   [ubuntu1804](https://hub.docker.com/r/mullholland/docker-molecule-ubuntu1804)
--   [ubuntu2004](https://hub.docker.com/r/mullholland/docker-molecule-ubuntu2004)
--   [centos7](https://hub.docker.com/r/mullholland/docker-molecule-centos7)
--   [centos-stream8](https://hub.docker.com/r/mullholland/docker-molecule-centos-stream8)
--   [ubi8](https://hub.docker.com/r/mullholland/docker-molecule-ubi8)
--   [almalinux8](https://hub.docker.com/r/mullholland/docker-molecule-almalinux8)
+|container|tags|
+|---------|----|
+|[EL](https://hub.docker.com/repository/docker/mullholland/docker-centos-systemd/general)|all|
+|[Amazon](https://hub.docker.com/repository/docker/mullholland/docker-amazonlinux-systemd/general)|Candidate|
+|[Fedora](https://hub.docker.com/repository/docker/mullholland/docker-fedora-systemd/general)|all|
+|[Ubuntu](https://hub.docker.com/repository/docker/mullholland/docker-ubuntu-systemd/general)|all|
+|[Debian](https://hub.docker.com/repository/docker/mullholland/docker-debian-systemd/general)|all|
 
 The minimum version of Ansible required is 2.10, tests have been done to:
 
--   The previous versions.
--   The current version.
-
-
-
-## [Exceptions](#exceptions)
-
-Some variations of the build matrix do not work. These are the variations and reasons why the build won't work:
-
-| variation                 | reason                 |
-|---------------------------|------------------------|
-| debian11 | No official packages |
-| fedora33 | No official packages |
-| fedora34 | No official packages |
-| fedora35 | No official packages |
-| rockylinux8 | No official packages |
-| amazonlinux | No official packages |
-
+- The previous version.
+- The current version.
+- The development version.
 
 If you find issues, please register them in [GitHub](https://github.com/mullholland/ansible-role-gitlab/issues)
 
 ## [License](#license)
 
-MIT
-
+[MIT](https://github.com/mullholland/ansible-role-gitlab/blob/master/LICENSE).
 
 ## [Author Information](#author-information)
 
-[Mullholland](https://github.com/mullholland)
+[Mullholland](https://mullholland.net)
 
-## [Special Thanks](#special-thanks)
-
-Template inspired by [Robert de Bock](https://github.com/robertdebock)
+Please consider [sponsoring me](https://github.com/sponsors/mullholland).
