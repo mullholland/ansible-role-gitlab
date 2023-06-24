@@ -1,6 +1,5 @@
 ---
 gitlab_dependencies:
-  - curl
   - openssh-server
   - policycoreutils
   - tzdata
