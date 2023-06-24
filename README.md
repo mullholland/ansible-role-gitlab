@@ -240,7 +240,6 @@ This role has been tested on these [container images](https://hub.docker.com/u/m
 |---------|----|
 |[EL](https://hub.docker.com/repository/docker/mullholland/docker-centos-systemd/general)|all|
 |[Amazon](https://hub.docker.com/repository/docker/mullholland/docker-amazonlinux-systemd/general)|Candidate|
-|[Fedora](https://hub.docker.com/repository/docker/mullholland/docker-fedora-systemd/general)|all|
 |[Ubuntu](https://hub.docker.com/repository/docker/mullholland/docker-ubuntu-systemd/general)|all|
 |[Debian](https://hub.docker.com/repository/docker/mullholland/docker-debian-systemd/general)|all|
 

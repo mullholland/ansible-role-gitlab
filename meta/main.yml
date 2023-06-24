@@ -15,9 +15,6 @@ galaxy_info:
     - name: Amazon
       versions:
         - Candidate
-    - name: Fedora
-      versions:
-        - all
     - name: Ubuntu
       versions:
         - all
