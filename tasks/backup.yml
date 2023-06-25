@@ -1,5 +1,5 @@
 ---
-- name: Create backup script
+- name: backup | Create backup script
   ansible.builtin.template:
     src: "backup/gitlab_backup.sh.j2"
     dest: "/usr/local/sbin/gitlab_backup.sh"
@@ -7,7 +7,7 @@
     group: "root"
     mode: "0700"
 
-- name: Create backup config script
+- name: backup | Create backup config script
   ansible.builtin.template:
     src: "backup/gitlab_backup.conf.sh.j2"
     dest: "/etc/gitlab/gitlab_backup.conf.sh"
@@ -15,7 +15,7 @@
     group: "root"
     mode: "0600"
 
-- name: Create Gitlab backup cron
+- name: backup | Create Gitlab backup cron
   ansible.builtin.cron:
     name: "gitlab-backup"
     minute: "{{ gitlab_backup_cron.minute }}"

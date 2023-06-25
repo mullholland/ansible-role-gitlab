@@ -1,0 +1,8 @@
+---
+#
+# Ansible managed
+#
+repository:
+  description: Installs and configures Gitlab. Adds an optional backupscript for local backups including config and terraform states.
+  homepage: https://mullholland.net
+  topics: development, git, backup, ansible, molecule, tox, playbook

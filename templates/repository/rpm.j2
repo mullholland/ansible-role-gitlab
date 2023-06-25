@@ -3,7 +3,11 @@
 
 [{{ gitlab_edition }}]
 name={{ gitlab_edition }}
+{% if ansible_distribution == "Amazon" %}
+baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/amazon/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/$basearch
+{% else %}
 baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/el/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/$basearch
+{% endif %}
 repo_gpgcheck=1
 gpgcheck=1
 enabled=1
@@ -15,7 +19,11 @@ metadata_expire=300
 
 [{{ gitlab_edition }}-source]
 name={{ gitlab_edition }}-source
+{% if ansible_distribution == "Amazon" %}
+baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/amazon/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/SRPMS
+{% else %}
 baseurl=https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/el/{{ gitlab_ansible_distribution_major_version |default(ansible_distribution_major_version) }}/SRPMS
+{% endif %}
 repo_gpgcheck=1
 gpgcheck=1
 enabled=1
