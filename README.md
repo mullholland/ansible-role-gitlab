@@ -238,7 +238,7 @@ This role has been tested on these [container images](https://hub.docker.com/u/m
 
 |container|tags|
 |---------|----|
-|[EL](https://hub.docker.com/repository/docker/mullholland/docker-centos-systemd/general)|all|
+|[EL](https://hub.docker.com/repository/docker/mullholland/docker-centos-systemd/general)|7, 8|
 |[Ubuntu](https://hub.docker.com/repository/docker/mullholland/docker-ubuntu-systemd/general)|all|
 |[Debian](https://hub.docker.com/repository/docker/mullholland/docker-debian-systemd/general)|all|
 

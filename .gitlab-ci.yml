@@ -16,8 +16,6 @@ molecule:
         tag: "7"
       - image: "centos"
         tag: "8"
-      - image: "centos"
-        tag: "latest"
       - image: "ubuntu"
         tag: "latest"
       - image: "ubuntu"
