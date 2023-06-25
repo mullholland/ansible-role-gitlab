@@ -12,9 +12,10 @@ galaxy_info:
     - name: EL
       versions:
         - all
-    - name: Amazon
-      versions:
-        - Candidate
+    # should work, but testing is unreliable
+    # - name: Amazon
+    #   versions:
+    #     - Candidate
     - name: Ubuntu
       versions:
         - all

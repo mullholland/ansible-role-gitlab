@@ -18,8 +18,6 @@ molecule:
         tag: "8"
       - image: "centos"
         tag: "latest"
-      - image: "amazonlinux"
-        tag: "2"
       - image: "ubuntu"
         tag: "latest"
       - image: "ubuntu"
